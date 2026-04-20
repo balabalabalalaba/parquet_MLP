@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>MLP Style - Parquet Data Visualizer ✨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            /* 替换原来的 background */
+            background: linear-gradient(rgba(255, 230, 240, 0.7), rgba(255, 230, 240, 0.7)), 
+                        url('mlp_background.png'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* 这样滚动时背景不动，更有质感 */
+            
+            font-family: 'Segoe UI', 'Quicksand', 'Poppins', sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .magic-container {
+            /* 增加磨砂玻璃效果，让背景若隐若现 */
+            background-color: rgba(255, 250, 240, 0.82); 
+            backdrop-filter: blur(8px); /* 强化磨砂感 */
+            /* 其他属性保持不变... */
+        }
+
+        /* MLP magical background decorations */
+        body::before {
+            content: "✨🦄🌈🎠💖";
+            font-size: 80px;
+            position: fixed;
+            bottom: 10px;
+            right: 20px;
+            opacity: 0.1;
+            pointer-events: none;
+            white-space: pre;
+            z-index: 0;
+        }
+
+        body::after {
+            content: "⭐💖🌟🌈🦋";
+            font-size: 60px;
+            position: fixed;
+            top: 30px;
+            left: 20px;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .magic-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: rgba(255, 250, 240, 0.88);
+            backdrop-filter: blur(2px);
+            border-radius: 64px 48px 64px 48px;
+            box-shadow: 0 20px 40px rgba(210, 120, 170, 0.25), 0 8px 20px rgba(0,0,0,0.1), inset 0 1px 2px rgba(255,255,255,0.8);
+            padding: 25px 30px 35px;
+            border: 2px solid #ffc0e0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .pony-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .pony-header h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, #E86F9F, #F6A7C1, #FFD966, #B280D0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 12px rgba(255,215,225,0.6);
+            letter-spacing: 2px;
+            font-weight: 800;
+            display: inline-block;
+        }
+
+        .pony-header p {
+            color: #b35d7e;
+            font-size: 1.1rem;
+            background: #fff0f5cc;
+            display: inline-block;
+            border-radius: 60px;
+            padding: 5px 20px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        .rainbow-divider {
+            height: 6px;
+            background: linear-gradient(90deg, #FF9AAE, #FFD6A5, #FDFFB6, #CAFFBF, #9BF6FF, #A0C4FF, #C5A3FF);
+            border-radius: 10px;
+            width: 80%;
+            margin: 15px auto;
+        }
+
+        .upload-zone {
+            background: #fff2f9;
+            border: 3px dashed #F9A8D4;
+            border-radius: 48px;
+            padding: 25px 20px;
+            text-align: center;
+            transition: 0.2s;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .upload-zone:hover {
+            background: #ffeef5;
+            border-color: #E86F9F;
+            transform: scale(0.99);
+        }
+
+        .upload-icon { font-size: 64px; margin-bottom: 10px; }
+        .upload-text { font-size: 1.6rem; font-weight: bold; color: #b83b6f; }
+        .upload-hint { color: #a36a81; font-size: 0.9rem; margin-top: 8px; }
+
+        input[type="file"] { display: none; }
+
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: #ffecf2c9;
+            padding: 12px 20px;
+            border-radius: 50px;
+        }
+
+        .info-badge {
+            background: #E86F9F;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: inline-flex;
+            gap: 15px;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 40px;
+        }
+
+        .pagination button {
+            background: #FFD966;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 5px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            color: #7a3b54;
+        }
+
+        .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .page-indicator { font-weight: bold; color: #b83b6f; }
+
+        .table-wrapper {
+            background: #fffef7;
+            border-radius: 32px;
+            overflow: auto;
+            max-height: 60vh;
+            border: 1px solid #ffcce0;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-table th {
+            background: #F4A4C1;
+            color: #2d1c24;
+            padding: 14px 12px;
+            position: sticky;
+            top: 0;
+            border-bottom: 3px solid #FFE1B9;
+            text-align: left;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ffdbeb;
+            color: #3e2a2f;
+            background-color: #ffffffdb;
+        }
+
+        .data-table tr:hover td { background-color: #fff0f9; }
+
+        .message-area {
+            text-align: center;
+            padding: 40px 20px;
+            background: #fff2f0;
+            border-radius: 48px;
+            margin: 20px 0;
+            color: #b95f83;
+            border: 1px solid #ffc0dd;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px; height: 40px;
+            border: 4px solid #ffe0f0;
+            border-top: 4px solid #E86F9F;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        footer { text-align: center; margin-top: 25px; font-size: 0.8rem; color: #b57693; }
+    </style>
+</head>
+<body>
+
+<div class="magic-container">
+    <div class="pony-header">
+        <h1>🦄 My Little Pony · Parquet Magic Reader 📊</h1>
+        <div class="rainbow-divider"></div>
+        <p>✨ Friendship is magic, and so is data visualization! ✨</p>
+    </div>
+
+    <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📁🌈</div>
+        <div class="upload-text">Click to Upload .parquet File</div>
+        <div class="upload-hint">Supports Apache Parquet — Let the pony magic reveal your data!</div>
+        <input type="file" id="parquetFileInput" accept=".parquet">
+    </div>
+
+    <div id="controlPanel" style="display: none;">
+        <div class="controls-bar">
+            <div class="info-badge">
+                <span>📊 Rows: <span id="totalRows">0</span></span>
+                <span>🎀 Columns: <span id="totalCols">0</span></span>
+            </div>
+            <div class="pagination">
+                <button id="prevPageBtn" disabled>◀ Prev</button>
+                <span class="page-indicator" id="pageIndicator">Page 1 / 1</span>
+                <button id="nextPageBtn" disabled>Next ▶</button>
+            </div>
+            <div class="info-badge">
+                <span>✨ Page Size: 20</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="tableContainer" class="table-wrapper">
+        <div class="message-area" id="statusMessage">
+            <div id="msgText">💖 Click the magical area above to explore your Parquet files! 💖</div>
+        </div>
+    </div>
+    
+    <footer>
+        🧸 Equestria Tech · Data & Friendship United | Powered by DuckDB-Wasm
+    </footer>
+</div>
+
+<script type="module">
+    import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
+
+    // State
+    let db, conn, currentFileName;
+    let totalRows = 0;
+    let currentPage = 1;
+    const PAGE_SIZE = 20;
+
+    const fileInput = document.getElementById('parquetFileInput');
+    const uploadZone = document.getElementById('uploadZone');
+    const statusMsg = document.getElementById('statusMessage');
+    const msgText = document.getElementById('msgText');
+    const controlPanel = document.getElementById('controlPanel');
+    const tableContainer = document.getElementById('tableContainer');
+    
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    const pageIndicator = document.getElementById('pageIndicator');
+
+    // Initialize DuckDB
+    async function init() {
+        msgText.innerText = "✨ Magic engine is waking up... ✨";
+        try {
+            const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
+            const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
+            const worker = new Worker(URL.createObjectURL(new Blob([`importScripts("${bundle.mainWorker}");`], {type: 'text/javascript'})));
+            db = new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(), worker);
+            await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
+            conn = await db.connect();
+            msgText.innerText = "💖 Ready! Upload a Parquet file to start. 💖";
+        } catch (e) {
+            msgText.innerText = "❌ Magic failed to load: " + e.message;
+        }
+    }
+
+    init();
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        showLoading("🌈 Pony magic is parsing your data... 🌈");
+        
+        try {
+            currentFileName = file.name;
+            const arrayBuffer = await file.arrayBuffer();
+            await db.registerFileBuffer(currentFileName, new Uint8Array(arrayBuffer));
+
+            // Get Counts
+            const countRes = await conn.query(`SELECT COUNT(*) as cnt FROM '${currentFileName}'`);
+            totalRows = Number(countRes.toArray()[0].cnt);
+            
+            document.getElementById('totalRows').innerText = totalRows;
+            controlPanel.style.display = "block";
+            currentPage = 1;
+            
+            await fetchPage();
+        } catch (err) {
+            showError(err.message);
+        }
+    });
+
+    async function fetchPage() {
+        const offset = (currentPage - 1) * PAGE_SIZE;
+        const result = await conn.query(`SELECT * FROM '${currentFileName}' LIMIT ${PAGE_SIZE} OFFSET ${offset}`);
+        const data = result.toArray();
+        const cols = result.schema.fields.map(f => f.name);
+        
+        document.getElementById('totalCols').innerText = cols.length;
+        renderTable(data, cols);
+        updatePagination();
+    }
+
+    function renderTable(data, cols) {
+        if (data.length === 0) {
+            tableContainer.innerHTML = '<div class="message-area">📭 This page has no data.</div>';
+            return;
+        }
+
+        let html = `<table class="data-table"><thead><tr>`;
+        cols.forEach(c => html += `<th>✨ ${c}</th>`);
+        html += `</tr></thead><tbody>`;
+
+        data.forEach(row => {
+            html += `<tr>`;
+            cols.forEach(c => {
+                let val = row[c];
+                if (val instanceof Date) val = val.toLocaleString();
+                if (typeof val === 'bigint') val = val.toString();
+                html += `<td>${val ?? '🌈 null'}</td>`;
+            });
+            html += `</tr>`;
+        });
+        html += `</tbody></table>`;
+        tableContainer.innerHTML = html;
+    }
+
+    function updatePagination() {
+        const totalPages = Math.ceil(totalRows / PAGE_SIZE) || 1;
+        pageIndicator.innerText = `Page ${currentPage} / ${totalPages}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+    }
+
+    prevBtn.onclick = async () => { if (currentPage > 1) { currentPage--; await fetchPage(); } };
+    nextBtn.onclick = async () => { currentPage++; await fetchPage(); };
+
+    function showLoading(txt) {
+        tableContainer.innerHTML = `<div class="message-area"><div class="loading-spinner"></div><div>${txt}</div></div>`;
+    }
+
+    function showError(err) {
+        tableContainer.innerHTML = `<div class="message-area"><h3>😢 Oops! Magical Glitch</h3><p>${err}</p></div>`;
+    }
+</script>
+</body>
+</html>
