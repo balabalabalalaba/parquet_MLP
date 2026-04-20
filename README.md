@@ -5,7 +5,7 @@ A whimsical, privacy-focused, and high-performance **Parquet file visualizer** b
 
 ## 🌟 Live Demo
 
-Visit the magical portal here: **[parquet.labmattercounter.top](https://www.google.com/search?q=https://parquet.labmattercounter.top)**
+Visit the magical portal here: **[parquet.labmattercounter.top](parquet.labmattercounter.top)**
 
 -----
 
