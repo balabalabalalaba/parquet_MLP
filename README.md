@@ -1,8 +1,3 @@
-Since your tool is now beautifully themed with **My Little Pony** and deployed on your custom domain, you need a README that reflects that same "Magic & Data" energy while remaining professional for GitHub.
-
-Here is a polished, English version of the README for your project.
-
------
 
 # 🦄 My Little Pony · Parquet Magic Reader ✨
 
